@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Wordpress directory, example: /var/www/example.com
+DIR=
+# Is used to create the backup file, example mywebsite.com
+SITE_NAME=
+# Destination directory, where to save the backup file, example
+# /home/user/
+DEST_DIR=
+# Who to inform when a backup is created
+MAIL=root
+
+# Don't edit anything else
+
+# error function
+wp_error(){
+    echo "$1" | mail -s "$SITE_NAME Backup Error" $MAIL -aFrom:server@$HOSTNAME
+}
+
+CUR_DATE=$(date +%d-%m-%Y)
+DB_NAME=$(grep DB_NAME $DIR/wp-config.php | sed -r 's/.{19}//' | sed -r 's/.{4}$//')
+DB_USER=$(grep DB_USER $DIR/wp-config.php | sed -r 's/.{19}//' | sed -r 's/.{4}$//')
+DB_PASSWORD=$(grep DB_PASSWORD $DIR/wp-config.php | sed -r 's/.{23}//' | sed -r 's/.{4}$//')
+SQL_DB=${DB_NAME}_$CUR_DATE.sql
+FILE=${CUR_DATE}_$SITE_NAME.tar.gz
+
+mysqldump -u $DB_USER -p$DB_PASSWORD $DB_NAME > /root/$SQL_DB || wp_error "Unable to create sql dump"
+tar czfP $DEST_DIR/$FILE /root/$SQL_DB $DIR || wp_error "Unable to create $FILE"
+
+rm -f /root/$SQL_DB
+
+# Is here just in case someone wants to make daily backups
+if [ $(date +%u) = 7 ]; then
+    echo "Your backup of $SITE_NAME is ready!" | mail -s "$SITE_NAME Backup" $MAIL -aFrom:server@$HOSTNAME
+fi
