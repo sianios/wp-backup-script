@@ -6,8 +6,8 @@ A simple script to backup wordpress database and website root directory weekly.
 
 Requirements
 ------------
-Debian or Ubuntu
-mailutils package
+* Debian or Ubuntu
+* mailutils package
 
 Install
 -------
