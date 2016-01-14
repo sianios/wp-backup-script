@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Name: Wordpress backup script
+# Description: Creates a backup of wordpress root directory and database
+# Version: 0.2
+
 # Wordpress directory, example: /var/www/example.com
 DIR=
 # Is used to create the backup file, example mywebsite.com
@@ -18,16 +22,16 @@ wp_error(){
 }
 
 CUR_DATE=$(date +%d-%m-%Y)
-DB_NAME=$(grep DB_NAME $DIR/wp-config.php | sed -r 's/.{19}//' | sed -r 's/.{4}$//')
-DB_USER=$(grep DB_USER $DIR/wp-config.php | sed -r 's/.{19}//' | sed -r 's/.{4}$//')
-DB_PASSWORD=$(grep DB_PASSWORD $DIR/wp-config.php | sed -r 's/.{23}//' | sed -r 's/.{4}$//')
+DB_NAME=$(grep DB_NAME $DIR/wp-config.php | awk -F "'" '{print $4}')
+DB_USER=$(grep DB_USER $DIR/wp-config.php | awk -F "'" '{print $4}')
+DB_PASSWORD=$(grep DB_PASSWORD $DIR/wp-config.php | awk -F "'" '{print $4}')
 SQL_DB=${DB_NAME}_$CUR_DATE.sql
 FILE=${CUR_DATE}_$SITE_NAME.tar.gz
 
-mysqldump -u $DB_USER -p$DB_PASSWORD $DB_NAME > /root/$SQL_DB || wp_error "Unable to create sql dump"
-tar czfP $DEST_DIR/$FILE /root/$SQL_DB $DIR || wp_error "Unable to create $FILE"
+mysqldump -u $DB_USER -p$DB_PASSWORD $DB_NAME > $DEST_DIR/$SQL_DB || wp_error "Unable to create sql dump"
+tar czf $DEST_DIR/$FILE $DEST_DIR/$SQL_DB $DIR || wp_error "Unable to create $FILE"
 
-rm -f /root/$SQL_DB
+rm -f $DEST_DIR/$SQL_DB
 
 # Is here just in case someone wants to make daily backups
 if [ $(date +%u) = 7 ]; then
