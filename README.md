@@ -20,4 +20,4 @@ sudo cp backup /etc/cron.weekly/
 
 About
 -----
-sianios.com/wordpress-backup-script
+https://github.com/sianios/wp-backup-script
